@@ -1,0 +1,7 @@
+{
+  "name": "МЭС · Расчёт и Документация",
+  "description": "Веб-система управления заказами, сметами, КС-2, КС-3, КС-6 и Реестром 2",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
