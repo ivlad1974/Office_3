@@ -15,7 +15,6 @@
   <nav id="tabs">
     <button class="tab active" data-view="orders">Заказы</button>
     <button class="tab" data-view="editor">Заказ (редактор)</button>
-    <button class="tab" data-view="reestr2">Реестр 2 (Расчёт/Документация)</button>
     <button class="tab" data-view="sprav">Справочник</button>
     <button class="tab" data-view="kontr">Контрагенты</button>
   </nav>
@@ -38,23 +37,28 @@
     <button id="btn-new-order" class="btn primary">＋ Новый заказ (шаблон)</button>
     <input id="order-search" class="search" placeholder="Поиск по названию объекта…">
   </div>
-  <table class="grid" id="orders-table">
-    <thead><tr>
-      <th>#</th><th>Имя ОБЪЕКТА в РЕЕСТР</th><th>Организация</th><th>Заказчик</th>
-      <th>Дата договора</th><th>Сумма заказа (с НДС)</th><th>Закрыто на сумму</th>
-      <th>Дата записи</th><th></th>
-    </tr></thead>
-    <tbody></tbody>
-  </table>
+  <div class="table-scroll">
+    <table class="grid" id="orders-table">
+      <thead><tr>
+        <th>#</th><th>Имя ОБЪЕКТА</th><th>Организация</th><th>Заказчик</th>
+        <th>Дата договора</th><th>Сумма заказа (с НДС)</th><th>Закрыто на сумму</th>
+        <th>Дата записи</th><th>Действия</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </section>
 
 <!-- ================= РЕДАКТОР ЗАКАЗА ================= -->
 <section id="view-editor" class="view hidden">
   <div class="toolbar">
+    <button id="btn-back-orders" class="btn" title="Вернуться к списку заказов">← К списку заказов</button>
     <h2 id="ed-title">Заказ</h2>
     <span class="spacer"></span>
+    <button id="btn-undo-top" class="btn btn-sheet-undo" title="Отменить последнее действие (Ctrl+Z)" disabled>↶ Отменить</button>
+    <button id="btn-redo-top" class="btn btn-sheet-redo" title="Повторить отмененное действие (Ctrl+Y)" disabled>↷ Повторить</button>
     <button id="btn-save-order" class="btn primary">💾 Сохранить</button>
-    <button id="btn-export-reestr" class="btn">📤 Экспорт в Реестр 2</button>
+    <button id="btn-clone-order" class="btn" title="Создать копию текущего заказа">⧉ Дублировать заказ</button>
     <button id="btn-print-ks2" class="btn">🖨 Печать КС-2</button>
     <button id="btn-print-ks3" class="btn">🖨 Печать КС-3</button>
     <button id="btn-print-ks6" class="btn">🖨 Печать КС-6</button>
@@ -66,23 +70,19 @@
     <button class="sheet-tab" data-sheet="ks6">КС-6</button>
     <button class="sheet-tab" data-sheet="ks2">КС-2</button>
     <button class="sheet-tab" data-sheet="ks3">КС-3</button>
-    <button class="sheet-tab" data-sheet="export">Экспорт</button>
   </div>
 
   <!-- ВВОД / шапка -->
   <div class="panel" id="panel-input">
     <fieldset><legend>ВВОД (шапка заказа)</legend>
       <div class="form-grid">
-        <label>Имя ОБЪЕКТА в РЕЕСТР <input id="f-object" type="text"></label>
+        <label>Имя ОБЪЕКТА <input id="f-object" type="text" placeholder="Название объекта"></label>
         <label>Наша организация
           <select id="f-org"></select></label>
         <label>Заказчик
           <select id="f-customer"></select></label>
-        <label>Источник заказа <input id="f-source" type="text"></label>
-        <label>Дата договора <input id="f-ddate" type="date"></label>
-        <label>Стройка <input id="f-stroyka" type="text"></label>
-        <label>Объект (полное наименование) <input id="f-obekt" type="text"></label>
-        <label>Договор (номер) <input id="f-dogovor" type="text"></label>
+        <label>Стройка <input id="f-stroyka" type="text" placeholder="Стройка"></label>
+        <label>Объект (полное наименование) <input id="f-obekt" type="text" placeholder="Полное наименование"></label>
         <label>Коэф. Материалы <input id="f-coefm" type="number" step="0.01" value="1"></label>
         <label>Коэф. Работа <input id="f-coefw" type="number" step="0.01" value="1"></label>
       </div>
@@ -92,63 +92,92 @@
   <!-- МАТЕРИАЛЫ -->
   <div class="panel" id="panel-materials">
     <div class="toolbar slim">
-      <button class="btn add-row" data-kind="header">＋ Заголовок раздела</button>
-      <button class="btn add-row" data-kind="sub">＋ Подзаголовок</button>
-      <button class="btn add-row" data-kind="Материалы">＋ Материалы</button>
-      <button class="btn add-row" data-kind="Работа">＋ Работа</button>
-      <span class="sep"></span>
+      <button class="btn mini btn-sheet-undo" title="Отменить последнее действие (Ctrl+Z)" disabled>↶ Отменить</button>
+      <button class="btn mini btn-sheet-redo" title="Повторить последнее действие (Ctrl+Y)" disabled>↷ Повторить</button>
+      <span class="divider-v"></span>
       <button id="btn-copy-rows" class="btn" title="Копировать выделенные (или одну через ⧉ на строке)">⧉ Копировать</button>
       <button id="btn-cut-rows" class="btn">✂ Вырезать</button>
-      <button id="btn-paste-rows" class="btn" title="Вставить в конец; △＋/▽＋ на строке — в любое место">📋 Вставить</button>
+      <button id="btn-paste-rows" class="btn" title="Вставить в конец или между строками">📋 Вставить</button>
       <span id="sel-count" class="tagline"></span>
       <span id="clip-info" class="tagline"></span>
       <span class="spacer"></span>
       <b>Коэф.:&nbsp;<input id="hdr-coefm" type="number" step="0.01" class="coef mini" value="1">
       &nbsp;<input id="hdr-coefw" type="number" step="0.01" class="coef mini" value="1">&nbsp; Итого:&nbsp;<span id="hdr-total">0</span></b>
     </div>
-    <p class="hint">Подсказки: тип строки «Подзаголовок» превращает её в подзаголовок раздела; кнопки △＋/▽＋ вставляют новую строку или буфер копирования между существующими; чекбоксы слева выделяют группу строк для копирования/вырезания/удаления; при вводе наименования цена и ед.изм. подставляются из Справочника.</p>
-    <table class="grid editable" id="mat-table">
-      <thead><tr>
-        <th>✓</th><th>Тип</th><th>Наименование</th><th>Ед.изм.</th>
-        <th>Кол-во, ед.</th><th>Цена руб. с НДС</th><th>Сумма с НДС</th>
-        <th>Σ Матер. (×Kм)</th><th>Σ Работа (×Kr)</th><th>Вставка</th><th>Действия</th>
-      </tr></thead>
-      <tbody></tbody>
-      <tfoot><tr>
-        <td colspan="6" class="right"><b>ИТОГО</b></td>
-        <td id="tot-mat">0</td><td id="tot-work">0</td><td id="tot-all">0</td><td colspan="2"></td>
-      </tr></tfoot>
-    </table>
+    <p class="hint">Подсказки: нажимайте кнопки «Заг.», «под Заг.», «Поз.» слева от таблицы для добавления строки; при копировании строк на их месте появляется кнопка «Вставить» (Esc для отмены); тип Заголовок/Подзаголовок меняется в 1 клик.</p>
+    <div class="table-scroll has-seam-gutter">
+      <table class="grid editable" id="mat-table">
+        <thead><tr>
+          <th style="width:34px">✓</th><th style="width:100px">Тип</th><th>Наименование</th><th style="width:65px">Ед.изм.</th>
+          <th style="width:85px">Кол-во</th><th style="width:105px">Цена с НДС</th><th style="width:115px">Сумма с НДС</th>
+          <th style="width:115px">Σ Матер. (×Kм)</th><th style="width:115px">Σ Работа (×Kr)</th><th style="width:45px">✕</th>
+        </tr></thead>
+        <tbody></tbody>
+        <tfoot><tr>
+          <td colspan="6" class="right"><b>ИТОГО</b></td>
+          <td id="tot-mat">0</td><td id="tot-work">0</td><td id="tot-all">0</td><td></td>
+        </tr></tfoot>
+      </table>
+    </div>
+    <div class="table-bottom-actions">
+      <div id="bottom-normal-actions" class="bottom-actions-row">
+        <span style="font-size:13px; color:var(--hint); margin-right:8px;">Добавить строку в конец:</span>
+        <button type="button" class="btn btn-divider-add btn-add-hdr" data-add-at="end" data-type="header" title="Вставить строку: Заголовок раздела">Заг.</button>
+        <button type="button" class="btn btn-divider-add btn-add-sub" data-add-at="end" data-type="sub" title="Вставить строку: под Заголовок">под Заг.</button>
+        <button type="button" class="btn primary btn-divider-add btn-add-pos" data-add-at="end" data-type="item" title="Вставить строку: Позиция">＋ Поз.</button>
+      </div>
+      <div id="bottom-paste-actions" class="bottom-actions-row hidden">
+        <button type="button" class="btn-seam-paste" id="btn-bottom-paste" title="Вставить скопированные строки в самый конец">📋 Вставить в конец</button>
+        <button type="button" class="btn mini" id="btn-bottom-cancel-paste" title="Отменить вставку (Esc)">Отмена (Esc)</button>
+      </div>
+    </div>
+    <datalist id="dict-list-all"></datalist>
     <datalist id="dict-list-m"></datalist>
     <datalist id="dict-list-w"></datalist>
   </div>
 
   <!-- СМЕТА -->
   <div class="panel hidden" id="panel-smeta">
+    <div class="toolbar slim">
+      <button class="btn mini btn-sheet-undo" title="Отменить последнее действие (Ctrl+Z)" disabled>↶ Отменить</button>
+      <button class="btn mini btn-sheet-redo" title="Повторить последнее действие (Ctrl+Y)" disabled>↷ Повторить</button>
+      <span class="spacer"></span>
+    </div>
     <div class="kv">
       <span>Смета на сумму (без НДС): <b id="sm-total">0</b></span>
       <span>Выполнено с начала работ (без НДС): <b id="sm-done">0</b></span>
       <span>Выполнено с начала года (без НДС): <b id="sm-ytd">0</b></span>
     </div>
-    <table class="grid" id="smeta-table">
-      <thead><tr>
-        <th>№ поз.</th><th>Конструктивные элементы и виды работ</th><th>Ед.изм.</th>
-        <th>Цена за ед., руб (без НДС)</th><th>Кол-во по калькуляции</th>
-        <th>Стоимость Матер.</th><th>Стоимость Усл.</th>
-        <th>Выполнено с начала работ: кол-во</th><th>сумма</th>
-        <th>Остаток: кол-во</th><th>сумма</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-scroll">
+      <table class="grid" id="smeta-table">
+        <thead><tr>
+          <th>№ поз.</th><th>Конструктивные элементы и виды работ</th><th>Ед.изм.</th>
+          <th>Цена за ед., руб (без НДС)</th><th>Кол-во по калькуляции</th>
+          <th>Стоимость Матер.</th><th>Стоимость Усл.</th>
+          <th>Выполнено с начала работ: кол-во</th><th>сумма</th>
+          <th>Остаток: кол-во</th><th>сумма</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- КС-6 -->
   <div class="panel hidden" id="panel-ks6">
+    <div class="toolbar slim">
+      <button class="btn mini btn-sheet-undo" title="Отменить последнее действие (Ctrl+Z)" disabled>↶ Отменить</button>
+      <button class="btn mini btn-sheet-redo" title="Повторить последнее действие (Ctrl+Y)" disabled>↷ Повторить</button>
+      <span class="divider-v"></span>
+      <label>№ договора в КС-6:&nbsp;<input id="ks6-dogovor" class="mini" style="width:130px;"></label>&nbsp;
+      <label>Дата договора:&nbsp;<input id="ks6-ddate" type="date" class="mini"></label>
+    </div>
     <p class="hint">Управление закрытием — прямо в шапке таблицы: в нужном столбце выберите статус «Закрытие» (остальные автоматически перейдут в «----») и укажите месяц/год выпадающими списками. Введённые объёмы попадают в журнал КС-6, смету и КС-2/КС-3.</p>
-    <table class="grid editable" id="ks6-table">
-      <thead></thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-scroll">
+      <table class="grid editable" id="ks6-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <h3 class="obems-title">Объемы закрытия</h3>
     <p class="hint">Формируется автоматически из журнала КС-6: для каждой даты закрытия — позиции и объёмы (VLOOKUP по № позиции в Смету).</p>
     <div id="obems-blocks" class="obems"></div>
@@ -156,6 +185,11 @@
 
   <!-- КС-2 -->
   <div class="panel hidden" id="panel-ks2">
+    <div class="toolbar slim">
+      <button class="btn mini btn-sheet-undo" title="Отменить последнее действие (Ctrl+Z)" disabled>↶ Отменить</button>
+      <button class="btn mini btn-sheet-redo" title="Повторить последнее действие (Ctrl+Y)" disabled>↷ Повторить</button>
+      <span class="spacer"></span>
+    </div>
     <fieldset><legend>Параметры акта КС-2</legend>
       <div class="form-grid">
         <label>Дата КС-2 (Дата_КС2) <input id="f-ks2date" type="date"></label>
@@ -168,70 +202,166 @@
 
   <!-- КС-3 -->
   <div class="panel hidden" id="panel-ks3">
+    <div class="toolbar slim">
+      <button class="btn mini btn-sheet-undo" title="Отменить последнее действие (Ctrl+Z)" disabled>↶ Отменить</button>
+      <button class="btn mini btn-sheet-redo" title="Повторить последнее действие (Ctrl+Y)" disabled>↷ Повторить</button>
+      <span class="spacer"></span>
+    </div>
     <div id="ks3-doc" class="doc a4"></div>
   </div>
-
-  <!-- ЭКСПОРТ -->
-  <div class="panel hidden" id="panel-export">
-    <p class="hint">Строка экспорта в Реестр 2 (аналог именованного диапазона «Экспорт», макрос СохранениеНовогоЗаказа → PasteSpecial в РасчетДокументация).</p>
-    <table class="grid" id="export-table"><tbody></tbody></table>
-    <div class="toolbar">
-      <button id="btn-download-zip" class="btn">⬇ Скачать данные заказа (JSON)</button>
-      <button id="btn-close-order" class="btn danger">✕ Закрыть заказ</button>
-    </div>
-  </div>
-</section>
-
-<!-- ================= РЕЕСТР 2 ================= -->
-<section id="view-reestr2" class="view hidden">
-  <div class="toolbar">
-    <h2>Реестр 2 — «РасчетДокументация» (<span id="r2-count">0</span> записей)</h2>
-    <input id="r2-search" class="search" placeholder="Поиск…">
-    <button id="btn-r2-add" class="btn primary">＋ Добавить запись вручную</button>
-  </div>
-  <div class="scroll-x"><table class="grid compact" id="r2-table"><thead></thead><tbody></tbody></table></div>
 </section>
 
 <!-- ================= СПРАВОЧНИК МАТЕРИАЛОВ И РАБОТ ================= -->
 <section id="view-sprav" class="view hidden">
-  <div class="toolbar">
-    <h2>Справочник материалов и работ</h2>
-    <button id="btn-sprav-add-m" class="btn primary">＋ Материал</button>
-    <button id="btn-sprav-add-w" class="btn">＋ Работа</button>
+  <div class="sprav-window-switcher">
+    <button class="sprav-tab-btn active" data-sprav-view="mat">
+      📦 Материалы (<span id="sprav-tab-m-count">0</span>)
+    </button>
+    <button class="sprav-tab-btn" data-sprav-view="work">
+      🔨 Работы (<span id="sprav-tab-w-count">0</span>)
+    </button>
+    <span class="divider-v"></span>
+    <button class="btn mini btn-sheet-undo" title="Отменить последнее действие (Ctrl+Z)" disabled>↶ Отменить</button>
+    <button class="btn mini btn-sheet-redo" title="Повторить последнее действие (Ctrl+Y)" disabled>↷ Повторить</button>
+    <span class="spacer"></span>
     <button id="btn-sprav-reset" class="btn danger" title="Вернуть исходные данные из Excel-книги">↺ Из оригинала</button>
   </div>
-  <p class="hint">Заполнен из данных исходной книги (1178 строк). Используется редактором заказа: при вводе наименования автоподстановка ед.изм. и цены; кнопка «→ Заказ» добавляет позицию в открытый заказ.</p>
-  <h3>Материалы (<span id="sprav-m-count">0</span>)
-      <input id="sprav-search-m" class="search" placeholder="Поиск по названию…"></h3>
-  <table class="grid compact editable" id="sprav-m-table">
-    <thead><tr><th>№</th><th>Наименование</th><th>Ед.изм.</th><th>Цена руб. с НДС</th><th></th></tr></thead>
-    <tbody id="sprav-m-tbody"></tbody>
-  </table>
-  <h3>Работы (<span id="sprav-w-count">0</span>)
-      <input id="sprav-search-w" class="search" placeholder="Поиск по названию…"></h3>
-  <table class="grid compact editable" id="sprav-w-table">
-    <thead><tr><th>№</th><th>Наименование</th><th>Ед.изм.</th><th>Цена руб. с НДС</th><th></th></tr></thead>
-    <tbody id="sprav-w-tbody"></tbody>
-  </table>
+  <p class="hint">Справочники разделены по двум окнам (Материалы и Работы). При выборе или вводе наименования в редакторе заказа признак работы или материала, ед.изм. и цена определяются и проставляются автоматически.</p>
+
+  <!-- Окно 1: Материалы с разделами -->
+  <div id="sprav-win-mat" class="sprav-window">
+    <div class="toolbar" style="flex-wrap:wrap; gap:8px;">
+      <h2>📦 Справочник: Материалы (<span id="sprav-m-count">0</span>)</h2>
+      <button id="btn-sprav-add-sec" class="btn primary" title="Создать новый раздел материалов (Кабельная продукция, Арматура, ВРУ и др.)">＋ Создать раздел</button>
+      <button id="btn-sprav-add-m" class="btn" title="Добавить новый материал">＋ Добавить материал</button>
+      <span class="divider-v"></span>
+      <button id="btn-sprav-expand-all" class="btn mini" title="Развернуть все разделы">⊞ Развернуть все</button>
+      <button id="btn-sprav-collapse-all" class="btn mini" title="Свернуть все разделы">⊟ Свернуть все</button>
+      <span class="spacer"></span>
+      <input id="sprav-search-m" class="search" placeholder="Поиск по названию или разделу…">
+    </div>
+
+    <!-- Панель групповых действий с выделенными материалами -->
+    <div id="sprav-mat-bulk-bar" class="bulk-actions-bar hidden">
+      <span class="bulk-count">Выделено: <b id="sprav-mat-sel-count">0</b> поз.</span>
+      <div class="bulk-btns">
+        <span style="font-size:12px; color:var(--hint);">Переместить в:</span>
+        <select id="sprav-mat-bulk-target-sec" class="mini"></select>
+        <button type="button" class="btn mini primary" id="btn-sprav-mat-bulk-move" title="Переместить выбранные материалы в указанный раздел">Переместить</button>
+        <button type="button" class="btn mini danger" id="btn-sprav-mat-bulk-del" title="Удалить выбранные материалы">✕ Удалить</button>
+        <button type="button" class="btn mini" id="btn-sprav-mat-bulk-uncheck" title="Снять все выделения">Снять выбор</button>
+      </div>
+    </div>
+
+    <!-- Контейнер аккордеон-разделов материалов -->
+    <div id="sprav-mat-sections-container" class="sprav-sections-list"></div>
+  </div>
+
+  <!-- Окно 2: Работы -->
+  <div id="sprav-win-work" class="sprav-window hidden">
+    <div class="toolbar">
+      <h2>🔨 Справочник: Работы (<span id="sprav-w-count">0</span>)</h2>
+      <button id="btn-sprav-add-w" class="btn primary">＋ Добавить работу</button>
+      <input id="sprav-search-w" class="search" placeholder="Поиск по названию работы…">
+    </div>
+    <div class="scroll-x">
+      <table class="grid compact editable" id="sprav-w-table">
+        <thead><tr><th style="width:40px">№</th><th>Наименование работы</th><th style="width:90px">Ед.изм.</th><th style="width:130px">Цена руб. с НДС</th><th style="width:130px"></th></tr></thead>
+        <tbody id="sprav-w-tbody"></tbody>
+      </table>
+    </div>
+  </div>
 </section>
 
 <!-- ================= КОНТРАГЕНТЫ ================= -->
 <section id="view-kontr" class="view hidden">
-  <div class="toolbar"><h2>Контрагенты</h2>
+  <div class="toolbar">
+    <h2>Контрагенты</h2>
+    <button class="btn mini btn-sheet-undo" title="Отменить последнее действие (Ctrl+Z)" disabled>↶ Отменить</button>
+    <button class="btn mini btn-sheet-redo" title="Повторить последнее действие (Ctrl+Y)" disabled>↷ Повторить</button>
+    <span class="divider-v"></span>
     <button id="btn-our-add" class="btn primary">＋ Наша организация</button>
     <button id="btn-cust-add" class="btn">＋ Заказчик</button>
+    <span class="spacer"></span>
+    <input id="kontr-search" class="search" placeholder="Поиск по наименованию, ИНН…">
+    <button id="btn-kontr-reset" class="btn danger" title="Восстановить организации и заказчиков из оригинального Excel">↺ Из оригинала</button>
   </div>
-  <h3>Наши компании (Подрядчик)</h3>
-  <table class="grid" id="our-table"><thead><tr>
-    <th>Список</th><th>Наименование</th><th>ИНН</th><th>КПП</th><th>ОКПО</th><th>Адрес</th>
-    <th>Наименование в подписи</th><th>Должность</th><th>ФИО</th><th>НДС</th><th></th></tr></thead><tbody></tbody></table>
-  <h3>Заказчики</h3>
-  <table class="grid" id="cust-table"><thead><tr>
-    <th>Список</th><th>Наименование</th><th>ИНН</th><th>КПП</th><th>ОКПО</th><th>Адрес</th>
-    <th>Наименование в подписи</th><th></th></tr></thead><tbody></tbody></table>
+  <p class="hint">База контрагентов (Подрядчики и Заказчики). Все изменения сохраняются автоматически и сразу становятся доступны для выбора в заказах, актах КС-2, КС-3 и журнале КС-6.</p>
+
+  <h3>Наши компании (Подрядчик) — <span id="our-count">0</span></h3>
+  <div class="table-scroll" style="max-height: 280px; margin-bottom: 22px;">
+    <table class="grid compact editable" id="our-table">
+      <thead><tr>
+        <th style="min-width:120px">Список</th>
+        <th style="min-width:200px">Наименование</th>
+        <th style="min-width:110px">ИНН</th>
+        <th style="min-width:100px">КПП</th>
+        <th style="min-width:90px">ОКПО</th>
+        <th style="min-width:260px">Адрес</th>
+        <th style="min-width:160px">В подписи</th>
+        <th style="min-width:100px">Должность</th>
+        <th style="min-width:130px">ФИО</th>
+        <th style="min-width:90px">НДС</th>
+        <th style="width:40px"></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <h3>Заказчики — <span id="cust-count">0</span></h3>
+  <div class="table-scroll" style="max-height: 420px;">
+    <table class="grid compact editable" id="cust-table">
+      <thead><tr>
+        <th style="min-width:140px">Список</th>
+        <th style="min-width:230px">Наименование</th>
+        <th style="min-width:110px">ИНН</th>
+        <th style="min-width:100px">КПП</th>
+        <th style="min-width:90px">ОКПО</th>
+        <th style="min-width:280px">Адрес</th>
+        <th style="min-width:180px">В подписи</th>
+        <th style="width:40px"></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </section>
 
 <div id="toast" class="toast hidden"></div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div id="modal-confirm" class="modal-backdrop hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-icon-warn">⚠️</span>
+      <h3 id="modal-confirm-title">Подтверждение удаления</h3>
+    </div>
+    <div class="modal-body" id="modal-confirm-msg">
+      Вы действительно хотите удалить эту строку?
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" id="modal-confirm-cancel">Отмена</button>
+      <button type="button" class="btn danger" id="modal-confirm-ok">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно ввода текста (создание/переименование раздела) -->
+<div id="modal-prompt" class="modal-backdrop hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-icon-warn">📁</span>
+      <h3 id="modal-prompt-title">Раздел материалов</h3>
+    </div>
+    <div class="modal-body">
+      <p id="modal-prompt-msg" style="margin-bottom:10px; font-weight:500;"></p>
+      <input id="modal-prompt-input" type="text" class="input-text" style="width:100%; box-sizing:border-box; font-size:14px; padding:7px 10px;" placeholder="Название раздела…">
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" id="modal-prompt-cancel">Отмена</button>
+      <button type="button" class="btn primary" id="modal-prompt-ok">Сохранить</button>
+    </div>
+  </div>
+</div>
 </main>
 
 <script src="js/data.js"></script>
